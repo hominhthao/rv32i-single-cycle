@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+__MACOSX/
+
+# Simulation outputs
+build/
+*.vvp
+*.vcd
+*.fst
+*.log
+
+# Temporary files
+*.tmp
+*.swp
+*~
