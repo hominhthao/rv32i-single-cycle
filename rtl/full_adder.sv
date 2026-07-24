@@ -3,7 +3,7 @@
 module full_adder (
     input  logic i_a,
     input  logic i_b,
-    input   logic i_cin,
+    input  logic i_cin,
 
     output logic o_sum,
     output logic o_cout

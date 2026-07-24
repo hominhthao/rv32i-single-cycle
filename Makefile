@@ -35,13 +35,57 @@ UNIT_TB   := $(TB_UNIT_DIR)/$(UNIT)_tb.sv
 UNIT_SIM  := $(BUILD_DIR)/$(UNIT).vvp
 UNIT_WAVE := $(BUILD_DIR)/$(UNIT).vcd
 
+# Extra RTL files needed by each unit test.
+# Example: adder_32bit instantiates full_adder.
+UNIT_DEPS_adder_32bit := $(RTL_DIR)/full_adder.sv
+UNIT_DEPS_subtractor_32bit := $(RTL_DIR)/full_adder.sv $(RTL_DIR)/adder_32bit.sv
+UNIT_DEPS_alu := \
+	$(RTL_DIR)/full_adder.sv \
+	$(RTL_DIR)/adder_32bit.sv \
+	$(RTL_DIR)/subtractor_32bit.sv \
+	$(RTL_DIR)/and_32bit.sv \
+	$(RTL_DIR)/or_32bit.sv \
+	$(RTL_DIR)/xor_32bit.sv \
+	$(RTL_DIR)/sll_32bit.sv \
+	$(RTL_DIR)/srl_32bit.sv \
+	$(RTL_DIR)/sra_32bit.sv \
+	$(RTL_DIR)/slt_32bit.sv \
+	$(RTL_DIR)/sltu_32bit.sv
+UNIT_DEPS := $(UNIT_DEPS_$(UNIT))
+UNIT_SRCS := $(UNIT_DEPS) $(UNIT_RTL)
+
 # ----------------------------------------------------------
 # Full CPU RTL Sources
 # Add new modules here as the project grows
 # ----------------------------------------------------------
 
 RTL_SRCS := \
-	$(RTL_DIR)/full_adder.sv
+	$(RTL_DIR)/full_adder.sv \
+	$(RTL_DIR)/adder_32bit.sv \
+	$(RTL_DIR)/subtractor_32bit.sv \
+	$(RTL_DIR)/and_32bit.sv \
+	$(RTL_DIR)/or_32bit.sv \
+	$(RTL_DIR)/xor_32bit.sv \
+	$(RTL_DIR)/sll_32bit.sv \
+	$(RTL_DIR)/srl_32bit.sv \
+	$(RTL_DIR)/sra_32bit.sv \
+	$(RTL_DIR)/slt_32bit.sv \
+	$(RTL_DIR)/sltu_32bit.sv \
+	$(RTL_DIR)/alu.sv
+
+LINT_UNITS := \
+	full_adder \
+	adder_32bit \
+	subtractor_32bit \
+	and_32bit \
+	or_32bit \
+	xor_32bit\
+	sll_32bit \
+	srl_32bit \
+	sra_32bit \
+	slt_32bit \
+	sltu_32bit \
+	alu
 
 # ----------------------------------------------------------
 # Default Target
@@ -61,8 +105,10 @@ help:
 	@echo ""
 	@echo "========== RV32I Single-Cycle CPU =========="
 	@echo "make unit UNIT=full_adder   - Compile and run one unit test"
+	@echo "make unit UNIT=adder_32bit  - Compile and run one unit test"
 	@echo "make wave UNIT=full_adder   - Run unit test and open waveform"
 	@echo "make lint                   - Run Verilator RTL lint"
+	@echo "make lint-unit UNIT=<name>  - Run Verilator lint for one unit"
 	@echo "make synth                  - Run Yosys synthesis"
 	@echo "make clean                  - Remove generated files"
 	@echo "make all                    - Lint and run default unit test"
@@ -92,7 +138,7 @@ unit: $(BUILD_DIR)
 		-Wall \
 		-s $(UNIT_TOP) \
 		-o $(UNIT_SIM) \
-		$(UNIT_RTL) \
+		$(UNIT_SRCS) \
 		$(UNIT_TB)
 
 	$(VVP) $(UNIT_SIM)
@@ -115,7 +161,16 @@ wave: unit
 lint:
 	@echo ""
 	@echo "========== RTL Lint =========="
-	$(VERILATOR) --lint-only --Wall $(RTL_SRCS)
+	@for unit in $(LINT_UNITS); do \
+		$(MAKE) lint-unit UNIT=$$unit || exit 1; \
+	done
+
+.PHONY: lint-unit
+
+lint-unit:
+	@echo ""
+	@echo "========== RTL Unit Lint: $(UNIT) =========="
+	$(VERILATOR) --lint-only --Wall --top-module $(UNIT) $(UNIT_SRCS)
 
 # ----------------------------------------------------------
 # Open-source Synthesis
