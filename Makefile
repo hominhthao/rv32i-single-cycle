@@ -71,7 +71,9 @@ RTL_SRCS := \
 	$(RTL_DIR)/sra_32bit.sv \
 	$(RTL_DIR)/slt_32bit.sv \
 	$(RTL_DIR)/sltu_32bit.sv \
-	$(RTL_DIR)/alu.sv
+	$(RTL_DIR)/alu.sv \
+	$(RTL_DIR)/immgen.sv \
+	$(RTL_DIR)/regfile.sv
 
 LINT_UNITS := \
 	full_adder \
@@ -85,7 +87,9 @@ LINT_UNITS := \
 	sra_32bit \
 	slt_32bit \
 	sltu_32bit \
-	alu
+	alu \
+	immgen\
+	regfile
 
 # ----------------------------------------------------------
 # Default Target
