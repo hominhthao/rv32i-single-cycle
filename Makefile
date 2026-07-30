@@ -51,6 +51,9 @@ UNIT_DEPS_alu := \
 	$(RTL_DIR)/sra_32bit.sv \
 	$(RTL_DIR)/slt_32bit.sv \
 	$(RTL_DIR)/sltu_32bit.sv
+
+UNIT_DEPS_lsu := \
+	$(RTL_DIR)/memory.sv
 UNIT_DEPS := $(UNIT_DEPS_$(UNIT))
 UNIT_SRCS := $(UNIT_DEPS) $(UNIT_RTL)
 
@@ -75,7 +78,8 @@ RTL_SRCS := \
 	$(RTL_DIR)/immgen.sv \
 	$(RTL_DIR)/regfile.sv \
 	$(RTL_DIR)/brc.sv\
-	$(RTL_DIR)/memory.sv
+	$(RTL_DIR)/memory.sv\
+	$(RTL_DIR)/lsu.sv
 
 LINT_UNITS := \
 	full_adder \
@@ -93,7 +97,8 @@ LINT_UNITS := \
 	immgen\
 	regfile\
 	brc	\
-	memory																			
+	memory\
+	lsu																		
 
 # ----------------------------------------------------------
 # Default Target
