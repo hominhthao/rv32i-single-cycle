@@ -1,0 +1,10 @@
+{
+    "verilog.linting.linter": "verilator",
+    "verilog.linting.path": "/opt/homebrew/bin",
+    "verilog.linting.verilator.arguments": "-Wall",
+    "verilog.linting.verilator.includePath": [
+        "rtl"
+    ],
+    "verilog.linting.runOnOpen": true,
+    "verilog.linting.runOnSave": true
+}
