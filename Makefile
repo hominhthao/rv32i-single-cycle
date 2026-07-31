@@ -78,11 +78,12 @@ RTL_SRCS := \
 	$(RTL_DIR)/alu.sv \
 	$(RTL_DIR)/immgen.sv \
 	$(RTL_DIR)/regfile.sv \
-	$(RTL_DIR)/brc.sv\
-	$(RTL_DIR)/memory.sv\
-	$(RTL_DIR)/lsu. \
+	$(RTL_DIR)/brc.sv \
+	$(RTL_DIR)/memory.sv \
+	$(RTL_DIR)/lsu.sv \
 	$(RTL_DIR)/pc_plus4.sv \
-	$(RTL_DIR)/pc.sv
+	$(RTL_DIR)/pc.sv \
+	$(RTL_DIR)/mux2_32bit.sv \
 
 LINT_UNITS := \
 	full_adder \
@@ -97,13 +98,14 @@ LINT_UNITS := \
 	slt_32bit \
 	sltu_32bit \
 	alu \
-	immgen\
-	regfile\
+	immgen \
+	regfile \
 	brc	\
-	memory\
+	memory \
 	lsu	\
 	pc_plus4 \
-	pc																	
+	pc \
+	mux2_32bit																	
 
 # ----------------------------------------------------------
 # Default Target
