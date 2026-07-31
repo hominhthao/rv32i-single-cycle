@@ -50,7 +50,8 @@ UNIT_DEPS_alu := \
 	$(RTL_DIR)/srl_32bit.sv \
 	$(RTL_DIR)/sra_32bit.sv \
 	$(RTL_DIR)/slt_32bit.sv \
-	$(RTL_DIR)/sltu_32bit.sv
+	$(RTL_DIR)/sltu_32bit.sv \
+	
 
 UNIT_DEPS_lsu := \
 	$(RTL_DIR)/memory.sv
@@ -79,7 +80,9 @@ RTL_SRCS := \
 	$(RTL_DIR)/regfile.sv \
 	$(RTL_DIR)/brc.sv\
 	$(RTL_DIR)/memory.sv\
-	$(RTL_DIR)/lsu.sv
+	$(RTL_DIR)/lsu. \
+	$(RTL_DIR)/pc_plus4.sv \
+	$(RTL_DIR)/pc.sv
 
 LINT_UNITS := \
 	full_adder \
@@ -98,7 +101,9 @@ LINT_UNITS := \
 	regfile\
 	brc	\
 	memory\
-	lsu																		
+	lsu	\
+	pc_plus4 \
+	pc																	
 
 # ----------------------------------------------------------
 # Default Target
