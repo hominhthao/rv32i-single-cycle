@@ -18,14 +18,47 @@ module memory_tb;
     memory dut (
         .i_clk   (i_clk),
         .i_reset (i_reset),
+
         .i_addr  (i_addr),
         .i_wdata (i_wdata),
         .i_bmask (i_bmask),
         .i_wren  (i_wren),
+
         .o_rdata (o_rdata)
     );
 
-    task automatic wr_word (
+    task automatic check_read (
+        input logic [31:0] addr,
+        input logic [31:0] expected
+    );
+        begin
+            i_addr  = addr;
+            i_wren  = 1'b0;
+            i_wdata = 32'b0;
+            i_bmask = 4'b0000;
+
+            #1;
+
+            if (o_rdata === expected) begin
+                pass_count++;
+
+                $display(
+                    "PASS: addr=%h rdata=%h",
+                    addr, o_rdata
+                );
+            end
+            else begin
+                fail_count++;
+
+                $display(
+                    "FAIL: addr=%h | actual=%h expected=%h",
+                    addr, o_rdata, expected
+                );
+            end
+        end
+    endtask
+
+    task automatic store (
         input logic [31:0] addr,
         input logic [31:0] data,
         input logic [3:0]  bmask
@@ -46,33 +79,6 @@ module memory_tb;
         end
     endtask
 
-    task automatic check_read (
-        input logic [31:0] addr,
-        input logic [31:0] expected
-    );
-        begin
-            i_addr = addr;
-            i_wren = 1'b0;
-
-            #1;
-
-            if (o_rdata === expected) begin
-                pass_count++;
-                $display(
-                    "PASS: addr=%h rdata=%h",
-                    addr, o_rdata
-                );
-            end
-            else begin
-                fail_count++;
-                $display(
-                    "FAIL: addr=%h | actual=%h expected=%h",
-                    addr, o_rdata, expected
-                );
-            end
-        end
-    endtask
-
     initial begin
         i_clk = 1'b0;
         forever #5 i_clk = ~i_clk;
@@ -80,15 +86,7 @@ module memory_tb;
 
     initial begin
         $dumpfile("build/memory.vcd");
-
-        // Dump TB-level signals only, not the whole memory array.
-        $dumpvars(0, i_clk);
-        $dumpvars(0, i_reset);
-        $dumpvars(0, i_addr);
-        $dumpvars(0, i_wdata);
-        $dumpvars(0, i_bmask);
-        $dumpvars(0, i_wren);
-        $dumpvars(0, o_rdata);
+        $dumpvars(0, memory_tb);
 
         i_reset = 1'b1;
         i_addr  = 32'b0;
@@ -96,64 +94,164 @@ module memory_tb;
         i_bmask = 4'b0000;
         i_wren  = 1'b0;
 
-        #12;
-        i_reset = 1'b0;
+        @(posedge i_clk);
+        #1;
 
-        // Reset clears word 0
         check_read(32'h0000_0000, 32'h0000_0000);
 
-        // Full word write
-        wr_word(32'h0000_0000, 32'h1234_5678, 4'b1111);
-        check_read(32'h0000_0000, 32'h1234_5678);
+        i_reset = 1'b0;
 
-        // Byte 0 write preserves upper bytes
-        wr_word(32'h0000_0000, 32'h0000_00AA, 4'b0001);
-        check_read(32'h0000_0000, 32'h1234_56AA);
+        // Full word write/read
+        store(
+            32'h0000_0000,
+            32'h1234_5678,
+            4'b1111
+        );
 
-        // Byte 1 write
-        wr_word(32'h0000_0000, 32'h0000_BB00, 4'b0010);
-        check_read(32'h0000_0000, 32'h1234_BBAA);
+        check_read(
+            32'h0000_0000,
+            32'h1234_5678
+        );
 
-        // Byte 2 write
-        wr_word(32'h0000_0000, 32'h00CC_0000, 4'b0100);
-        check_read(32'h0000_0000, 32'h12CC_BBAA);
+        // Byte lane 0
+        store(
+            32'h0000_0000,
+            32'h0000_00AA,
+            4'b0001
+        );
 
-        // Byte 3 write
-        wr_word(32'h0000_0000, 32'hDD00_0000, 4'b1000);
-        check_read(32'h0000_0000, 32'hDDCC_BBAA);
+        check_read(
+            32'h0000_0000,
+            32'h1234_56AA
+        );
 
-        // Halfword low write
-        wr_word(32'h0000_0004, 32'h0000_BEEF, 4'b0011);
-        check_read(32'h0000_0004, 32'h0000_BEEF);
+        // Byte lane 1
+        store(
+            32'h0000_0000,
+            32'h0000_BB00,
+            4'b0010
+        );
 
-        // Halfword high write
-        wr_word(32'h0000_0004, 32'hCAFE_0000, 4'b1100);
-        check_read(32'h0000_0004, 32'hCAFE_BEEF);
+        check_read(
+            32'h0000_0000,
+            32'h1234_BBAA
+        );
 
-        // Write disable should not change memory
+        // Byte lane 2
+        store(
+            32'h0000_0000,
+            32'h00CC_0000,
+            4'b0100
+        );
+
+        check_read(
+            32'h0000_0000,
+            32'h12CC_BBAA
+        );
+
+        // Byte lane 3
+        store(
+            32'h0000_0000,
+            32'hDD00_0000,
+            4'b1000
+        );
+
+        check_read(
+            32'h0000_0000,
+            32'hDDCC_BBAA
+        );
+
+        // Lower halfword write
+        store(
+            32'h0000_0004,
+            32'h0000_BEEF,
+            4'b0011
+        );
+
+        check_read(
+            32'h0000_0004,
+            32'h0000_BEEF
+        );
+
+        // Upper halfword write
+        store(
+            32'h0000_0004,
+            32'hCAFE_0000,
+            4'b1100
+        );
+
+        check_read(
+            32'h0000_0004,
+            32'hCAFE_BEEF
+        );
+
+        // Write disabled should not modify memory
         @(negedge i_clk);
         i_addr  = 32'h0000_0004;
         i_wdata = 32'h1111_2222;
         i_bmask = 4'b1111;
         i_wren  = 1'b0;
 
-        @(negedge i_clk);
-        check_read(32'h0000_0004, 32'hCAFE_BEEF);
+        @(posedge i_clk);
+        #1;
 
-        // Different word address
-        wr_word(32'h0000_0008, 32'hAABB_CCDD, 4'b1111);
-        check_read(32'h0000_0008, 32'hAABB_CCDD);
+        check_read(
+            32'h0000_0004,
+            32'hCAFE_BEEF
+        );
 
-        // Unaligned address aliases to aligned word by addr[10:2]
-        check_read(32'h0000_0009, 32'hAABB_CCDD);
+        // Word address truncates lower 2 bits: 0x8 and 0x9 access same word
+        store(
+            32'h0000_0008,
+            32'hAABB_CCDD,
+            4'b1111
+        );
 
-        // Boundary valid word
-        wr_word(32'h0000_07FC, 32'hDEAD_BEEF, 4'b1111);
-        check_read(32'h0000_07FC, 32'hDEAD_BEEF);
+        check_read(
+            32'h0000_0008,
+            32'hAABB_CCDD
+        );
 
-        // Out of range
-        check_read(32'h0000_0800, 32'h0000_0000);
-        check_read(32'h1000_0000, 32'h0000_0000);
+        check_read(
+            32'h0000_0009,
+            32'hAABB_CCDD
+        );
+
+        // Last valid word in 32 KiB memory: 0x0000_7FFC
+        store(
+            32'h0000_7FFC,
+            32'hDEAD_BEEF,
+            4'b1111
+        );
+
+        check_read(
+            32'h0000_7FFC,
+            32'hDEAD_BEEF
+        );
+
+        // Out of range read: 0x0000_8000 is outside 0x0000_0000 - 0x0000_7FFF
+        check_read(
+            32'h0000_8000,
+            32'h0000_0000
+        );
+
+        // Out of range write should be ignored
+        store(
+            32'h0000_8000,
+            32'hCAFE_BABE,
+            4'b1111
+        );
+
+        check_read(
+            32'h0000_8000,
+            32'h0000_0000
+        );
+
+        // High unrelated address should also read zero
+        check_read(
+            32'h1000_0000,
+            32'h0000_0000
+        );
 
         $display(
             "\nSUMMARY: PASS=%0d FAIL=%0d",

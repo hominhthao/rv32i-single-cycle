@@ -12,20 +12,22 @@ module memory (
     output logic [31:0] o_rdata
 );
 
-    localparam int MEM_SIZE_BYTES = 2048;
+    localparam int MEM_SIZE_BYTES = 32768; // 32 KiB, top address 0x7FFF
     localparam int MEM_SIZE_WORDS = MEM_SIZE_BYTES / 4;
 
     logic [31:0] mem [0:MEM_SIZE_WORDS-1];
 
-    logic [8:0]  word_addr;
+    logic [12:0] word_addr;
     logic        word_valid;
 
-    assign word_addr  = i_addr[10:2];
+    assign word_addr  = i_addr[14:2];
     assign word_valid = (i_addr < MEM_SIZE_BYTES);
+
+    integer i;
 
     always_ff @(posedge i_clk) begin
         if (i_reset) begin
-            for (int i = 0; i < MEM_SIZE_WORDS; i++) begin
+            for (i = 0; i < MEM_SIZE_WORDS; i++) begin
                 mem[i] <= 32'b0;
             end
         end
@@ -47,4 +49,3 @@ module memory (
     end
 
 endmodule
-
