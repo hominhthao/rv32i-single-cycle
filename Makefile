@@ -84,6 +84,7 @@ RTL_SRCS := \
 	$(RTL_DIR)/pc_plus4.sv \
 	$(RTL_DIR)/pc.sv \
 	$(RTL_DIR)/mux2_32bit.sv \
+	$(RTL_DIR)/mux4_32bit.sv \
 
 LINT_UNITS := \
 	full_adder \
@@ -105,7 +106,8 @@ LINT_UNITS := \
 	lsu	\
 	pc_plus4 \
 	pc \
-	mux2_32bit																	
+	mux2_32bit \
+	mux4_32bit																
 
 # ----------------------------------------------------------
 # Default Target
