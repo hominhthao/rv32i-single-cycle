@@ -87,6 +87,7 @@ RTL_SRCS := \
 	$(RTL_DIR)/mux2_32bit.sv \
 	$(RTL_DIR)/mux4_32bit.sv \
 	$(RTL_DIR)/imem.sv \
+	$(RTL_DIT)/control_unit.sv \
 
 LINT_UNITS := \
 	full_adder \
@@ -110,7 +111,8 @@ LINT_UNITS := \
 	pc \
 	mux2_32bit \
 	mux4_32bit \
-	imem 												
+	imem \
+	control_unit											
 
 # ----------------------------------------------------------
 # Default Target
